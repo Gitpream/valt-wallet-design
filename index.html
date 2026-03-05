@@ -35,7 +35,7 @@
   .badge{font-size:11px;padding:2px 8px;border-radius:6px;margin-right:8px;color:#FFF;display:inline-block}
   .src-badge{font-size:10px;background:#334155;padding:2px 8px;border-radius:6px;color:#94A3B8;float:right}
   .step{display:flex;gap:8px;margin-bottom:5px;font-size:13px;color:#CBD5E1}
-  .step.vault{color:#FDE68A;font-family:monospace;font-size:11px}
+  .step.valt{color:#FDE68A;font-family:monospace;font-size:11px}
   .step .arrow{font-weight:700;flex-shrink:0}
   .arrow-down{display:flex;justify-content:center;padding:3px 0}
 
@@ -87,7 +87,7 @@
 <div class="topnav">
   <h1>Wallet & Treasury System</h1>
   <button class="nav-btn active" data-section="s1">Part 1 — Digital Wallet</button>
-  <button class="nav-btn" data-section="s2">Part 2 — Stripe Treasury + Vault</button>
+  <button class="nav-btn" data-section="s2">Part 2 — Stripe Treasury + Valt</button>
 </div>
 
 <!-- ══════════════════════════════════════════════════ -->
@@ -147,12 +147,12 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════ -->
-<!-- SECTION 2: STRIPE TREASURY + VAULT                -->
+<!-- SECTION 2: STRIPE TREASURY + VALT                -->
 <!-- ══════════════════════════════════════════════════ -->
 <div id="s2" class="section">
   <div class="section-header">
-    <h2>Stripe Treasury + Vault Ledger System <span class="stripe-badge">Stripe Treasury</span></h2>
-    <p>Based on Stripe Treasury architecture — all movements tracked in Our Vault immutable ledger</p>
+    <h2>Stripe Treasury + Valt Ledger System <span class="stripe-badge">Stripe Treasury</span></h2>
+    <p>Based on Stripe Treasury architecture — all movements tracked in Our Valt immutable ledger</p>
   </div>
   <div class="tabs" id="tabs2"></div>
   <div id="s2-arch" class="panel active">
@@ -216,8 +216,8 @@
         <rect x="793" y="210" width="68" height="22" rx="6" fill="#1E293B" stroke="#64748B" stroke-width="1"/><text x="827" y="224" text-anchor="middle" fill="#E2E8F0" font-size="8" font-weight="600" font-family="system-ui">Ext. Bank</text>
         <line x1="815" y1="230" x2="826" y2="218" stroke="#10B981" stroke-width="1.4"/>
         <text x="840" y="242" fill="#10B981" font-size="7" font-weight="600" font-family="system-ui">OutboundTransfer</text>
-        <!-- Vault -->
-        <rect x="30" y="450" width="830" height="130" rx="14" fill="#1a0a0a" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="6,3"/><text x="445" y="472" text-anchor="middle" fill="#EF4444" font-size="11" font-weight="700" font-family="system-ui">OUR VAULT SYSTEM — Immutable Ledger + Balance Engine</text>
+        <!-- Valt -->
+        <rect x="30" y="450" width="830" height="130" rx="14" fill="#1a0a0a" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="6,3"/><text x="445" y="472" text-anchor="middle" fill="#EF4444" font-size="11" font-weight="700" font-family="system-ui">OUR VALT SYSTEM — Immutable Ledger + Balance Engine</text>
         <rect x="50" y="490" width="150" height="50" rx="8" fill="#1E293B" stroke="#F87171" stroke-width="1.2"/><text x="125" y="510" text-anchor="middle" fill="#F1F5F9" font-size="10" font-weight="700" font-family="system-ui">Ledger</text><text x="125" y="524" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="system-ui">(append-only)</text>
         <rect x="220" y="490" width="160" height="50" rx="8" fill="#1E293B" stroke="#FBBF24" stroke-width="1.2"/><text x="300" y="510" text-anchor="middle" fill="#F1F5F9" font-size="10" font-weight="700" font-family="system-ui">Balance Engine</text><text x="300" y="524" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="system-ui">Pending | Available | Treasury</text>
         <rect x="400" y="490" width="150" height="50" rx="8" fill="#1E293B" stroke="#34D399" stroke-width="1.2"/><text x="475" y="510" text-anchor="middle" fill="#F1F5F9" font-size="10" font-weight="700" font-family="system-ui">Reconciler</text><text x="475" y="524" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="system-ui">Webhook ↔ Ledger match</text>
@@ -234,12 +234,12 @@
         <div class="legend-item"><div class="legend-dot" style="background:#06B6D4"></div><span>Issuing</span></div>
         <div class="legend-item"><div class="legend-dot" style="background:#F59E0B"></div><span>Payouts / Billing</span></div>
         <div class="legend-item"><div class="legend-dot" style="background:#10B981"></div><span>Treasury Movements</span></div>
-        <div class="legend-item"><div class="legend-dot" style="background:#EF4444"></div><span>Vault Ledger</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#EF4444"></div><span>Valt Ledger</span></div>
       </div>
     </div>
   </div>
   <div id="s2-flow" class="panel"></div>
-  <div id="s2-ledger" class="panel"><p class="note">Every money movement creates an immutable double-entry ledger record in Our Vault system.</p><div id="s2-ledger-table" style="overflow-x:auto"></div></div>
+  <div id="s2-ledger" class="panel"><p class="note">Every money movement creates an immutable double-entry ledger record in Our Valt system.</p><div id="s2-ledger-table" style="overflow-x:auto"></div></div>
   <div id="s2-summary" class="panel"></div>
 </div>
 
@@ -319,18 +319,18 @@ document.getElementById('s1-ledger-table').innerHTML=t1;
 
 /* ═══ SECTION 2 DATA ═══ */
 const s2Phases=[
-  {ph:"A",title:"Customer Pay-ins → Platform",color:"#3B82F6",src:"Stripe Payments",steps:["Customers pay via card, bank transfer, or digital wallet","Stripe captures pay-in; funds land in Platform balance","LEDGER ▸ PAY_IN_CREDIT — gross amount per txn recorded","VAULT  ▸ Merchant Pending balance +gross"]},
-  {ph:"B",title:"Platform → Transfer → Connected Account",color:"#8B5CF6",src:"Stripe Connect",steps:["Platform calculates billing charges per merchant settings (flat / % / tiered / hybrid)","Net amount transferred to merchant's Custom Connected Account","LEDGER ▸ PLATFORM_FEE_DEBIT + TRANSFER_TO_CONNECTED","VAULT  ▸ Pending → Available (net of platform fees)"]},
-  {ph:"C",title:"Connected Account — Issuing (Optional)",color:"#06B6D4",src:"Stripe Issuing",steps:["Connected Account provisions Cardholder + Card (virtual/physical)","Card spend draws from Issuing Balance within the connected account","LEDGER ▸ CARD_SPEND_DEBIT per authorized transaction","VAULT  ▸ Available reduced by card authorization amount"]},
-  {ph:"D",title:"Connected Account → Payout → Treasury FA",color:"#F59E0B",src:"Stripe Treasury",steps:["Payout moves funds from Connected Account into Treasury Financial Account","Treasury FA is the merchant's stored-value account (FDIC-eligible via bank partner)","LEDGER ▸ PAYOUT_TO_TREASURY with stripe payout_id","VAULT  ▸ Available → Treasury bucket updated"]},
-  {ph:"E",title:"Treasury — Outbound Transfers & Payments",color:"#10B981",src:"Stripe Treasury",steps:["OutboundTransfer — send funds to merchant's own external bank (ACH/wire)","OutboundPayment — send funds to third party (vendor, supplier, etc.)","InboundTransfer — pull funds into Treasury from external bank","LEDGER ▸ TREASURY_OUTBOUND_DEBIT / TREASURY_INBOUND_CREDIT","VAULT  ▸ Treasury balance adjusted; status via webhooks"]},
-  {ph:"F",title:"Webhook Reconciliation & Finality",color:"#EF4444",src:"Vault System",steps:["Stripe webhooks confirm every movement (payout.paid, outbound_transfer.posted, etc.)","Vault reconciler matches webhook events against pending ledger entries","Mismatches flagged; auto-retry on transient failures","LEDGER ▸ RECONCILIATION_CONFIRM / RECONCILIATION_MISMATCH","VAULT  ▸ Final balances locked per settlement cycle"]},
+  {ph:"A",title:"Customer Pay-ins → Platform",color:"#3B82F6",src:"Stripe Payments",steps:["Customers pay via card, bank transfer, or digital wallet","Stripe captures pay-in; funds land in Platform balance","LEDGER ▸ PAY_IN_CREDIT — gross amount per txn recorded","VALT  ▸ Merchant Pending balance +gross"]},
+  {ph:"B",title:"Platform → Transfer → Connected Account",color:"#8B5CF6",src:"Stripe Connect",steps:["Platform calculates billing charges per merchant settings (flat / % / tiered / hybrid)","Net amount transferred to merchant's Custom Connected Account","LEDGER ▸ PLATFORM_FEE_DEBIT + TRANSFER_TO_CONNECTED","VALT  ▸ Pending → Available (net of platform fees)"]},
+  {ph:"C",title:"Connected Account — Issuing (Optional)",color:"#06B6D4",src:"Stripe Issuing",steps:["Connected Account provisions Cardholder + Card (virtual/physical)","Card spend draws from Issuing Balance within the connected account","LEDGER ▸ CARD_SPEND_DEBIT per authorized transaction","VALT  ▸ Available reduced by card authorization amount"]},
+  {ph:"D",title:"Connected Account → Payout → Treasury FA",color:"#F59E0B",src:"Stripe Treasury",steps:["Payout moves funds from Connected Account into Treasury Financial Account","Treasury FA is the merchant's stored-value account (FDIC-eligible via bank partner)","LEDGER ▸ PAYOUT_TO_TREASURY with stripe payout_id","VALT  ▸ Available → Treasury bucket updated"]},
+  {ph:"E",title:"Treasury — Outbound Transfers & Payments",color:"#10B981",src:"Stripe Treasury",steps:["OutboundTransfer — send funds to merchant's own external bank (ACH/wire)","OutboundPayment — send funds to third party (vendor, supplier, etc.)","InboundTransfer — pull funds into Treasury from external bank","LEDGER ▸ TREASURY_OUTBOUND_DEBIT / TREASURY_INBOUND_CREDIT","VALT  ▸ Treasury balance adjusted; status via webhooks"]},
+  {ph:"F",title:"Webhook Reconciliation & Finality",color:"#EF4444",src:"Valt System",steps:["Stripe webhooks confirm every movement (payout.paid, outbound_transfer.posted, etc.)","Valt reconciler matches webhook events against pending ledger entries","Mismatches flagged; auto-retry on transient failures","LEDGER ▸ RECONCILIATION_CONFIRM / RECONCILIATION_MISMATCH","VALT  ▸ Final balances locked per settlement cycle"]},
 ];
 const flowEl2=document.getElementById('s2-flow');
 s2Phases.forEach((p,i)=>{
-  const isV=s=>s.startsWith('LEDGER')||s.startsWith('VAULT');
+  const isV=s=>s.startsWith('LEDGER')||s.startsWith('VALT');
   let h=`<div class="card" style="border-left:4px solid ${p.color}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3 style="color:${p.color};margin:0"><span class="badge" style="background:${p.color}">${p.ph}</span>${p.title}</h3><span class="src-badge">${p.src}</span></div>`;
-  p.steps.forEach(s=>{const v=isV(s);h+=`<div class="step${v?' vault':''}"><span style="color:${p.color};font-weight:700;flex-shrink:0">${v?'◆':'→'}</span><span>${s}</span></div>`;});
+  p.steps.forEach(s=>{const v=isV(s);h+=`<div class="step${v?' valt':''}"><span style="color:${p.color};font-weight:700;flex-shrink:0">${v?'◆':'→'}</span><span>${s}</span></div>`;});
   h+='</div>';
   if(i<s2Phases.length-1)h+=arrowSVG;
   flowEl2.innerHTML+=h;
@@ -357,11 +357,11 @@ document.getElementById('s2-ledger-table').innerHTML=t2;
 // S2 Summary
 const summaryPts=[
   {icon:"🏦",title:"Stripe Treasury as Core Rail",text:"All merchant funds flow through Stripe's Treasury Financial Accounts — providing FDIC-eligible stored value, ACH/wire capabilities, and full money movement APIs."},
-  {icon:"📒",title:"Immutable Double-Entry Ledger",text:"Every money movement (pay-in, fee, transfer, payout, card spend, treasury movement) creates an append-only ledger entry in Our Vault."},
+  {icon:"📒",title:"Immutable Double-Entry Ledger",text:"Every money movement (pay-in, fee, transfer, payout, card spend, treasury movement) creates an append-only ledger entry in Our Valt."},
   {icon:"💰",title:"Derived Balance Buckets",text:"Pending, Available, Treasury, and Reserved balances are always computed from ledger entries — never stored as standalone mutable fields."},
   {icon:"🧾",title:"Billing Before Disbursement",text:"Platform charges (flat, %, tiered, hybrid, subscription) are deducted before the Transfer to Connected Account."},
-  {icon:"💳",title:"Optional Card Issuing",text:"Connected Accounts can issue virtual/physical cards via Stripe Issuing. Card spend tracked as CARD_SPEND_DEBIT in the Vault ledger."},
-  {icon:"🔄",title:"Webhook-Driven Finality",text:"Payout and Treasury statuses confirmed via Stripe webhooks. Vault reconciler matches events against pending ledger entries."},
+  {icon:"💳",title:"Optional Card Issuing",text:"Connected Accounts can issue virtual/physical cards via Stripe Issuing. Card spend tracked as CARD_SPEND_DEBIT in the Valt ledger."},
+  {icon:"🔄",title:"Webhook-Driven Finality",text:"Payout and Treasury statuses confirmed via Stripe webhooks. Valt reconciler matches events against pending ledger entries."},
   {icon:"🔐",title:"Idempotent & Retry-Safe",text:"Every Stripe object ID stored in the ledger to prevent duplicate movements. Webhook deduplication by event ID."},
 ];
 const sumEl=document.getElementById('s2-summary');

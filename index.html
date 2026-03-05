@@ -1,183 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Digital Wallet System — Data Workflow</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Digital Wallet + Stripe Treasury — Complete System</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: system-ui, -apple-system, sans-serif; background: #0F172A; color: #E2E8F0; padding: 24px; min-height: 100vh; }
-  h1 { font-size: 22px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px; }
-  .sub { color: #94A3B8; font-size: 13px; margin-bottom: 20px; }
-  .tabs { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
-  .tab { padding: 7px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; background: #1E293B; color: #94A3B8; transition: all 0.2s; }
-  .tab.active { background: #3B82F6; color: #FFF; }
-  .panel { display: none; }
-  .panel.active { display: block; }
-  .card { background: #1E293B; border-radius: 12px; padding: 18px 20px; margin-bottom: 8px; }
-  .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
-  .step { display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; color: #CBD5E1; }
-  .step .arrow { font-weight: 700; flex-shrink: 0; }
-  .arrow-down { display: flex; justify-content: center; padding: 4px 0; }
-  .billing-card { background: #1E293B; border-radius: 10px; padding: 14px 18px; margin-bottom: 10px; }
-  .billing-card .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-  .billing-card .type { font-weight: 700; font-size: 14px; color: #F59E0B; }
-  .billing-card code { font-size: 12px; background: #334155; padding: 3px 8px; border-radius: 6px; color: #FDE68A; }
-  .billing-card .desc { font-size: 12px; color: #94A3B8; }
-  .order-box { background: #1E293B; border-radius: 10px; padding: 14px 18px; border-left: 4px solid #EF4444; margin-top: 10px; font-size: 13px; color: #CBD5E1; }
-  .order-box strong { color: #EF4444; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; padding: 8px 12px; color: #94A3B8; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #334155; }
-  td { padding: 8px 12px; border-bottom: 1px solid #1E293B; }
-  td code { background: #334155; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
-  .principle { display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; color: #CBD5E1; }
-  .principle .dot { color: #3B82F6; font-weight: 700; flex-shrink: 0; }
-  .note { font-size: 13px; color: #94A3B8; margin-bottom: 12px; }
-  svg text { user-select: none; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,sans-serif;background:#0F172A;color:#E2E8F0;min-height:100vh}
+  
+  /* NAV */
+  .topnav{position:sticky;top:0;z-index:100;background:#0B1120;border-bottom:1px solid #1E293B;padding:12px 24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .topnav h1{font-size:15px;color:#F8FAFC;margin-right:auto;font-weight:700}
+  .nav-btn{padding:8px 18px;border-radius:8px;border:2px solid #334155;cursor:pointer;font-size:12px;font-weight:700;background:transparent;color:#94A3B8;transition:all .25s}
+  .nav-btn.active{background:#3B82F6;border-color:#3B82F6;color:#FFF}
+  .nav-btn:hover:not(.active){border-color:#64748B;color:#E2E8F0}
+
+  /* SECTIONS */
+  .section{display:none;padding:24px;max-width:960px;margin:0 auto}
+  .section.active{display:block}
+  .section-header{margin-bottom:6px}
+  .section-header h2{font-size:20px;font-weight:700;color:#F8FAFC}
+  .section-header p{font-size:12px;color:#64748B;margin-top:2px;margin-bottom:16px}
+  .section-header .stripe-badge{display:inline-block;font-size:10px;background:#635BFF20;color:#A5B4FC;border:1px solid #635BFF40;padding:2px 10px;border-radius:20px;margin-left:8px}
+
+  /* TABS */
+  .tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+  .tab{padding:7px 16px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:#1E293B;color:#94A3B8;transition:all .2s}
+  .tab.active{background:#3B82F6;color:#FFF}
+  .panel{display:none}.panel.active{display:block}
+
+  /* CARDS */
+  .card{background:#1E293B;border-radius:12px;padding:16px 18px;margin-bottom:8px}
+  .card h3{font-size:14px;font-weight:700;margin-bottom:8px}
+  .badge{font-size:11px;padding:2px 8px;border-radius:6px;margin-right:8px;color:#FFF;display:inline-block}
+  .src-badge{font-size:10px;background:#334155;padding:2px 8px;border-radius:6px;color:#94A3B8;float:right}
+  .step{display:flex;gap:8px;margin-bottom:5px;font-size:13px;color:#CBD5E1}
+  .step.vault{color:#FDE68A;font-family:monospace;font-size:11px}
+  .step .arrow{font-weight:700;flex-shrink:0}
+  .arrow-down{display:flex;justify-content:center;padding:3px 0}
+
+  /* BILLING */
+  .billing-card{background:#1E293B;border-radius:10px;padding:14px 18px;margin-bottom:10px}
+  .billing-card .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .billing-card .type{font-weight:700;font-size:14px;color:#F59E0B}
+  .billing-card code{font-size:12px;background:#334155;padding:3px 8px;border-radius:6px;color:#FDE68A}
+  .billing-card .desc{font-size:12px;color:#94A3B8}
+  .order-box{background:#1E293B;border-radius:10px;padding:14px 18px;border-left:4px solid #EF4444;margin-top:10px;font-size:13px;color:#CBD5E1}
+  .order-box strong{color:#EF4444}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{text-align:left;padding:8px 10px;color:#64748B;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #334155}
+  td{padding:8px 10px;border-bottom:1px solid #1E293B}
+  td code{background:#334155;padding:2px 8px;border-radius:4px;font-size:11px}
+
+  /* SUMMARY */
+  .summary-card{background:#1E293B;border-radius:12px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;margin-bottom:10px}
+  .summary-card .icon{font-size:22px;flex-shrink:0}
+  .summary-card h4{font-size:14px;font-weight:700;color:#F8FAFC;margin-bottom:4px}
+  .summary-card p{font-size:12px;color:#94A3B8;line-height:1.5}
+  .deduction{background:#1E293B;border-radius:12px;padding:16px 18px;border-left:4px solid #EF4444;margin-top:10px}
+  .deduction h4{font-size:13px;font-weight:700;color:#EF4444;margin-bottom:10px}
+  .deduction .line{display:flex;gap:8px;margin-bottom:4px;font-size:12px;font-family:monospace}
+
+  .principle{display:flex;gap:8px;margin-bottom:6px;font-size:13px;color:#CBD5E1}
+  .principle .dot{color:#3B82F6;font-weight:700;flex-shrink:0}
+  .note{font-size:12px;color:#94A3B8;margin-bottom:12px}
+
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;justify-content:center}
+  .legend-item{display:flex;align-items:center;gap:5px}
+  .legend-dot{width:10px;height:10px;border-radius:3px}
+  .legend-item span:last-child{font-size:10px;color:#94A3B8}
+  svg text{user-select:none}
+
+  /* DIVIDER */
+  .section-divider{height:1px;background:linear-gradient(90deg,transparent,#334155,transparent);margin:30px 0}
+
+  /* PRINCIPLES BOX */
+  .principles-box{background:#1E293B;border-radius:12px;padding:18px 20px;margin-top:24px}
+  .principles-box h3{font-size:14px;font-weight:700;color:#F8FAFC;margin-bottom:10px}
 </style>
 </head>
 <body>
 
-<h1>Digital Wallet System</h1>
-<p class="sub">Merchant wallet data workflow — sales ingestion → billing → Stripe disbursement</p>
-
-<div class="tabs">
-  <button class="tab active" data-tab="flow">Workflow</button>
-  <button class="tab" data-tab="billing">Billing Types</button>
-  <button class="tab" data-tab="ledger">Ledger Codes</button>
-  <button class="tab" data-tab="arch">Architecture</button>
+<!-- ═══════════ TOP NAV ═══════════ -->
+<div class="topnav">
+  <h1>Wallet & Treasury System</h1>
+  <button class="nav-btn active" data-section="s1">Part 1 — Digital Wallet</button>
+  <button class="nav-btn" data-section="s2">Part 2 — Stripe Treasury + Vault</button>
 </div>
 
-<!-- WORKFLOW -->
-<div id="flow" class="panel active"></div>
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 1: DIGITAL WALLET                         -->
+<!-- ══════════════════════════════════════════════════ -->
+<div id="s1" class="section active">
+  <div class="section-header">
+    <h2>Digital Wallet System</h2>
+    <p>Merchant wallet data workflow — sales ingestion → billing → Stripe disbursement</p>
+  </div>
+  <div class="tabs" id="tabs1"></div>
+  <div id="s1-flow" class="panel active"></div>
+  <div id="s1-billing" class="panel"></div>
+  <div id="s1-ledger" class="panel"><p class="note">Every money movement produces an immutable, append-only ledger entry with double-entry bookkeeping.</p><div id="s1-ledger-table" style="overflow-x:auto"></div></div>
+  <div id="s1-arch" class="panel">
+    <div style="background:#1E293B;border-radius:12px;padding:24px;overflow-x:auto">
+      <svg viewBox="0 0 800 520" style="width:100%;max-width:800px">
+        <rect x="300" y="10" width="200" height="44" rx="8" fill="#334155" stroke="#64748B" stroke-width="1.5"/><text x="400" y="35" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">POS / Payment Gateway</text>
+        <rect x="300" y="90" width="200" height="44" rx="8" fill="#1E3A5F" stroke="#3B82F6" stroke-width="1.5"/><text x="400" y="115" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">EOD Batch Aggregator</text>
+        <rect x="300" y="170" width="200" height="44" rx="8" fill="#3B1E5F" stroke="#8B5CF6" stroke-width="1.5"/><text x="400" y="195" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Merchant Wallet</text>
+        <rect x="60" y="170" width="180" height="44" rx="8" fill="#1E293B" stroke="#7DD3FC" stroke-width="1.5"/><text x="150" y="195" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Ledger (append-only)</text>
+        <rect x="560" y="170" width="180" height="44" rx="8" fill="#1E293B" stroke="#A78BFA" stroke-width="1.5"/><text x="650" y="195" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Balance Engine</text>
+        <rect x="300" y="260" width="200" height="44" rx="8" fill="#5F3A1E" stroke="#F59E0B" stroke-width="1.5"/><text x="400" y="285" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Billing Charge Calc</text>
+        <rect x="560" y="260" width="180" height="44" rx="8" fill="#1E293B" stroke="#FDE68A" stroke-width="1.5"/><text x="650" y="285" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Billing Settings DB</text>
+        <rect x="300" y="350" width="200" height="44" rx="8" fill="#5F1E1E" stroke="#EF4444" stroke-width="1.5"/><text x="400" y="375" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Approval Engine</text>
+        <rect x="300" y="440" width="200" height="44" rx="8" fill="#1E4D3A" stroke="#10B981" stroke-width="1.5"/><text x="400" y="465" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Stripe Payout API</text>
+        <rect x="60" y="440" width="180" height="44" rx="8" fill="#1E293B" stroke="#34D399" stroke-width="1.5"/><text x="150" y="465" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Webhook Listener</text>
+        <line x1="400" y1="54" x2="400" y2="86" stroke="#475569" stroke-width="1.5"/><polygon points="395,80 400,86 405,80" fill="#475569"/>
+        <line x1="400" y1="134" x2="400" y2="166" stroke="#475569" stroke-width="1.5"/><polygon points="395,160 400,166 405,160" fill="#475569"/>
+        <line x1="400" y1="214" x2="400" y2="256" stroke="#475569" stroke-width="1.5"/><polygon points="395,250 400,256 405,250" fill="#475569"/>
+        <line x1="400" y1="304" x2="400" y2="346" stroke="#475569" stroke-width="1.5"/><polygon points="395,340 400,346 405,340" fill="#475569"/>
+        <line x1="400" y1="394" x2="400" y2="436" stroke="#475569" stroke-width="1.5"/><polygon points="395,430 400,436 405,430" fill="#475569"/>
+        <line x1="300" y1="192" x2="244" y2="192" stroke="#7DD3FC" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="250,188 244,192 250,196" fill="#7DD3FC"/>
+        <line x1="500" y1="192" x2="556" y2="192" stroke="#A78BFA" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="550,188 556,192 550,196" fill="#A78BFA"/>
+        <line x1="560" y1="282" x2="504" y2="282" stroke="#FDE68A" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="510,278 504,282 510,286" fill="#FDE68A"/>
+        <line x1="244" y1="462" x2="296" y2="462" stroke="#34D399" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="290,458 296,462 290,466" fill="#34D399"/>
+        <text x="270" y="183" text-anchor="middle" fill="#7DD3FC" font-size="9" font-family="system-ui">writes</text>
+        <text x="530" y="183" text-anchor="middle" fill="#A78BFA" font-size="9" font-family="system-ui">updates</text>
+        <text x="530" y="275" text-anchor="middle" fill="#FDE68A" font-size="9" font-family="system-ui">reads config</text>
+        <text x="270" y="455" text-anchor="middle" fill="#34D399" font-size="9" font-family="system-ui">status sync</text>
+        <rect x="575" y="214" width="50" height="20" rx="4" fill="#1E1E3F" stroke="#A78BFA" stroke-width="1"/><text x="600" y="226" text-anchor="middle" fill="#C4B5FD" font-size="8" font-family="system-ui">Pending</text>
+        <rect x="631" y="214" width="50" height="20" rx="4" fill="#1E1E3F" stroke="#A78BFA" stroke-width="1"/><text x="656" y="226" text-anchor="middle" fill="#C4B5FD" font-size="8" font-family="system-ui">Available</text>
+        <rect x="687" y="214" width="50" height="20" rx="4" fill="#1E1E3F" stroke="#A78BFA" stroke-width="1"/><text x="712" y="226" text-anchor="middle" fill="#C4B5FD" font-size="8" font-family="system-ui">Reserved</text>
+      </svg>
+    </div>
+  </div>
 
-<!-- BILLING -->
-<div id="billing" class="panel">
-  <p class="note">Platform charges are applied per merchant billing settings <strong>before</strong> net disbursement is calculated.</p>
-</div>
-
-<!-- LEDGER -->
-<div id="ledger" class="panel">
-  <p class="note">Every money movement produces an immutable, append-only ledger entry with double-entry bookkeeping.</p>
-  <div style="overflow-x:auto"></div>
-</div>
-
-<!-- ARCHITECTURE -->
-<div id="arch" class="panel">
-  <div style="background:#1E293B;border-radius:12px;padding:24px;overflow-x:auto">
-    <svg viewBox="0 0 800 520" style="width:100%;max-width:800px">
-      <rect x="300" y="10" width="200" height="44" rx="8" fill="#334155" stroke="#64748B" stroke-width="1.5"/>
-      <text x="400" y="35" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">POS / Payment Gateway</text>
-      <rect x="300" y="90" width="200" height="44" rx="8" fill="#1E3A5F" stroke="#3B82F6" stroke-width="1.5"/>
-      <text x="400" y="115" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">EOD Batch Aggregator</text>
-      <rect x="300" y="170" width="200" height="44" rx="8" fill="#3B1E5F" stroke="#8B5CF6" stroke-width="1.5"/>
-      <text x="400" y="195" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Merchant Wallet</text>
-      <rect x="60" y="170" width="180" height="44" rx="8" fill="#1E293B" stroke="#7DD3FC" stroke-width="1.5"/>
-      <text x="150" y="195" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Ledger (append-only)</text>
-      <rect x="560" y="170" width="180" height="44" rx="8" fill="#1E293B" stroke="#A78BFA" stroke-width="1.5"/>
-      <text x="650" y="195" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Balance Engine</text>
-      <rect x="300" y="260" width="200" height="44" rx="8" fill="#5F3A1E" stroke="#F59E0B" stroke-width="1.5"/>
-      <text x="400" y="285" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Billing Charge Calc</text>
-      <rect x="560" y="260" width="180" height="44" rx="8" fill="#1E293B" stroke="#FDE68A" stroke-width="1.5"/>
-      <text x="650" y="285" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Billing Settings DB</text>
-      <rect x="300" y="350" width="200" height="44" rx="8" fill="#5F1E1E" stroke="#EF4444" stroke-width="1.5"/>
-      <text x="400" y="375" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Approval Engine</text>
-      <rect x="300" y="440" width="200" height="44" rx="8" fill="#1E4D3A" stroke="#10B981" stroke-width="1.5"/>
-      <text x="400" y="465" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Stripe Payout API</text>
-      <rect x="60" y="440" width="180" height="44" rx="8" fill="#1E293B" stroke="#34D399" stroke-width="1.5"/>
-      <text x="150" y="465" text-anchor="middle" dominant-baseline="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="system-ui">Webhook Listener</text>
-      <!-- Vertical arrows -->
-      <line x1="400" y1="54" x2="400" y2="86" stroke="#475569" stroke-width="1.5"/><polygon points="395,80 400,86 405,80" fill="#475569"/>
-      <line x1="400" y1="134" x2="400" y2="166" stroke="#475569" stroke-width="1.5"/><polygon points="395,160 400,166 405,160" fill="#475569"/>
-      <line x1="400" y1="214" x2="400" y2="256" stroke="#475569" stroke-width="1.5"/><polygon points="395,250 400,256 405,250" fill="#475569"/>
-      <line x1="400" y1="304" x2="400" y2="346" stroke="#475569" stroke-width="1.5"/><polygon points="395,340 400,346 405,340" fill="#475569"/>
-      <line x1="400" y1="394" x2="400" y2="436" stroke="#475569" stroke-width="1.5"/><polygon points="395,430 400,436 405,430" fill="#475569"/>
-      <!-- Horizontal arrows -->
-      <line x1="300" y1="192" x2="244" y2="192" stroke="#7DD3FC" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="250,188 244,192 250,196" fill="#7DD3FC"/>
-      <line x1="500" y1="192" x2="556" y2="192" stroke="#A78BFA" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="550,188 556,192 550,196" fill="#A78BFA"/>
-      <line x1="560" y1="282" x2="504" y2="282" stroke="#FDE68A" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="510,278 504,282 510,286" fill="#FDE68A"/>
-      <line x1="244" y1="462" x2="296" y2="462" stroke="#34D399" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="290,458 296,462 290,466" fill="#34D399"/>
-      <text x="270" y="183" text-anchor="middle" fill="#7DD3FC" font-size="9" font-family="system-ui">writes</text>
-      <text x="530" y="183" text-anchor="middle" fill="#A78BFA" font-size="9" font-family="system-ui">updates</text>
-      <text x="530" y="275" text-anchor="middle" fill="#FDE68A" font-size="9" font-family="system-ui">reads config</text>
-      <text x="270" y="455" text-anchor="middle" fill="#34D399" font-size="9" font-family="system-ui">status sync</text>
-      <rect x="575" y="214" width="50" height="20" rx="4" fill="#1E1E3F" stroke="#A78BFA" stroke-width="1"/><text x="600" y="226" text-anchor="middle" fill="#C4B5FD" font-size="8" font-family="system-ui">Pending</text>
-      <rect x="631" y="214" width="50" height="20" rx="4" fill="#1E1E3F" stroke="#A78BFA" stroke-width="1"/><text x="656" y="226" text-anchor="middle" fill="#C4B5FD" font-size="8" font-family="system-ui">Available</text>
-      <rect x="687" y="214" width="50" height="20" rx="4" fill="#1E1E3F" stroke="#A78BFA" stroke-width="1"/><text x="712" y="226" text-anchor="middle" fill="#C4B5FD" font-size="8" font-family="system-ui">Reserved</text>
-    </svg>
+  <!-- Principles -->
+  <div class="principles-box">
+    <h3>Key Design Principles</h3>
+    <div class="principle"><span class="dot">✦</span><span>Immutable ledger — every entry is append-only; corrections use ADJUSTMENT counter-entries, never edits</span></div>
+    <div class="principle"><span class="dot">✦</span><span>Balance is derived — Pending, Available, and Reserved are always computed from ledger, never stored independently</span></div>
+    <div class="principle"><span class="dot">✦</span><span>Billing before disbursement — platform fees deducted from Available before net payout is sent to Stripe</span></div>
+    <div class="principle"><span class="dot">✦</span><span>Idempotent payouts — Stripe payout_id stored to prevent duplicate disbursements on retry</span></div>
+    <div class="principle"><span class="dot">✦</span><span>Webhook-driven finality — payout status (paid/failed) confirmed via Stripe webhooks, not polling</span></div>
   </div>
 </div>
 
-<!-- PRINCIPLES -->
-<div style="margin-top:28px;background:#1E293B;border-radius:12px;padding:18px 20px">
-  <h3 style="font-size:14px;font-weight:700;color:#F8FAFC;margin-bottom:10px">Key Design Principles</h3>
-  <div class="principle"><span class="dot">✦</span><span>Immutable ledger — every entry is append-only; corrections use ADJUSTMENT counter-entries, never edits</span></div>
-  <div class="principle"><span class="dot">✦</span><span>Balance is derived — Pending, Available, and Reserved are always computed from ledger, never stored independently</span></div>
-  <div class="principle"><span class="dot">✦</span><span>Billing before disbursement — platform fees deducted from Available before net payout is sent to Stripe</span></div>
-  <div class="principle"><span class="dot">✦</span><span>Idempotent payouts — Stripe payout_id stored to prevent duplicate disbursements on retry</span></div>
-  <div class="principle"><span class="dot">✦</span><span>Webhook-driven finality — payout status (paid/failed) confirmed via Stripe webhooks, not polling</span></div>
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 2: STRIPE TREASURY + VAULT                -->
+<!-- ══════════════════════════════════════════════════ -->
+<div id="s2" class="section">
+  <div class="section-header">
+    <h2>Stripe Treasury + Vault Ledger System <span class="stripe-badge">Stripe Treasury</span></h2>
+    <p>Based on Stripe Treasury architecture — all movements tracked in Our Vault immutable ledger</p>
+  </div>
+  <div class="tabs" id="tabs2"></div>
+  <div id="s2-arch" class="panel active">
+    <div style="background:#0B1120;border-radius:14px;padding:16px;overflow-x:auto">
+      <svg viewBox="0 0 880 600" style="width:100%;max-width:880px">
+        <rect x="10" y="10" width="160" height="180" rx="14" fill="#0F172A" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/><text x="90" y="30" text-anchor="middle" fill="#475569" font-size="9" font-family="system-ui">CUSTOMERS</text>
+        <rect x="195" y="10" width="170" height="420" rx="14" fill="#0c1529" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/><text x="280" y="30" text-anchor="middle" fill="#475569" font-size="9" font-family="system-ui">PLATFORM (Stripe Connect)</text>
+        <rect x="390" y="10" width="210" height="420" rx="14" fill="#0d0f25" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/><text x="495" y="30" text-anchor="middle" fill="#475569" font-size="9" font-family="system-ui">CONNECTED ACCOUNT</text>
+        <rect x="625" y="10" width="240" height="420" rx="14" fill="#0a1a14" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/><text x="745" y="30" text-anchor="middle" fill="#475569" font-size="9" font-family="system-ui">STRIPE TREASURY + EXTERNAL</text>
+        <!-- Customers -->
+        <circle cx="55" cy="65" r="16" fill="#1E3A5F" stroke="#3B82F6" stroke-width="1.5"/><text x="85" y="68" fill="#94A3B8" font-size="9" font-family="system-ui">Customer 1</text>
+        <circle cx="55" cy="110" r="16" fill="#1E3A5F" stroke="#3B82F6" stroke-width="1.5"/><text x="85" y="113" fill="#94A3B8" font-size="9" font-family="system-ui">Customer 2</text>
+        <circle cx="55" cy="155" r="16" fill="#1E3A5F" stroke="#3B82F6" stroke-width="1.5"/><text x="85" y="158" fill="#94A3B8" font-size="9" font-family="system-ui">Customer 3</text>
+        <!-- Pay-in -->
+        <line x1="140" y1="65" x2="208" y2="98" stroke="#3B82F6" stroke-width="1.5"/><polygon points="203,94 208,98 202,100" fill="#3B82F6"/>
+        <text x="165" y="72" fill="#3B82F6" font-size="8" font-weight="600" font-family="system-ui">Pay-ins</text>
+        <line x1="140" y1="110" x2="208" y2="105" stroke="#3B82F6" stroke-width="1.5"/>
+        <line x1="140" y1="155" x2="208" y2="115" stroke="#3B82F6" stroke-width="1.5"/>
+        <!-- Platform -->
+        <rect x="210" y="80" width="140" height="55" rx="10" fill="#162340" stroke="#3B82F6" stroke-width="1.8"/><text x="280" y="102" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="700" font-family="system-ui">Platform</text><text x="280" y="118" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="system-ui">Billing Engine</text>
+        <!-- Billing -->
+        <rect x="215" y="165" width="130" height="40" rx="8" fill="#1a1a0f" stroke="#F59E0B" stroke-width="1.5"/><text x="280" y="182" text-anchor="middle" fill="#F1F5F9" font-size="10" font-weight="600" font-family="system-ui">Billing Settings</text><text x="280" y="196" text-anchor="middle" fill="#94A3B8" font-size="7.5" font-family="system-ui">flat / % / tiered / hybrid</text>
+        <line x1="280" y1="165" x2="280" y2="138" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="4,3"/><polygon points="276,143 280,138 284,143" fill="#F59E0B"/>
+        <!-- Transfer -->
+        <line x1="350" y1="107" x2="402" y2="107" stroke="#8B5CF6" stroke-width="1.6"/><polygon points="396,103 402,107 396,111" fill="#8B5CF6"/>
+        <text x="376" y="100" text-anchor="middle" fill="#8B5CF6" font-size="8" font-weight="600" font-family="system-ui">Transfer (net)</text>
+        <!-- Connected 1 -->
+        <rect x="405" y="80" width="180" height="55" rx="10" fill="#1a1040" stroke="#8B5CF6" stroke-width="1.8"/><text x="495" y="102" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="700" font-family="system-ui">Connected Account</text><text x="495" y="118" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="system-ui">Custom (merchant A)</text>
+        <!-- Issuing 1 -->
+        <rect x="415" y="165" width="75" height="36" rx="6" fill="#0d2a2a" stroke="#06B6D4" stroke-width="1.2"/><text x="452" y="186" text-anchor="middle" fill="#F1F5F9" font-size="9" font-weight="600" font-family="system-ui">Cardholder</text>
+        <rect x="505" y="165" width="70" height="36" rx="6" fill="#0d2a2a" stroke="#06B6D4" stroke-width="1.2"/><text x="540" y="186" text-anchor="middle" fill="#F1F5F9" font-size="9" font-weight="600" font-family="system-ui">Card</text>
+        <text x="495" y="212" text-anchor="middle" fill="#06B6D4" font-size="7.5" font-family="system-ui">Issuing Balance</text>
+        <line x1="490" y1="165" x2="490" y2="138" stroke="#06B6D4" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <!-- Payout -->
+        <line x1="585" y1="100" x2="638" y2="72" stroke="#F59E0B" stroke-width="1.6"/><polygon points="633,68 638,72 632,75" fill="#F59E0B"/>
+        <text x="612" y="78" fill="#F59E0B" font-size="8" font-weight="600" font-family="system-ui">Payouts</text>
+        <!-- Treasury 1 -->
+        <rect x="640" y="45" width="210" height="55" rx="10" fill="#0a2618" stroke="#10B981" stroke-width="1.8"/><text x="745" y="66" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="700" font-family="system-ui">Treasury Financial Acct</text><text x="745" y="82" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="system-ui">Merchant A (FDIC-eligible)</text>
+        <rect x="790" y="6" width="72" height="22" rx="6" fill="#1E293B" stroke="#64748B" stroke-width="1"/><text x="826" y="20" text-anchor="middle" fill="#E2E8F0" font-size="8" font-weight="600" font-family="system-ui">Ext. Bank</text>
+        <line x1="815" y1="45" x2="826" y2="30" stroke="#10B981" stroke-width="1.4"/><polygon points="822,33 826,28 828,35" fill="#10B981"/>
+        <text x="845" y="42" fill="#10B981" font-size="7" font-weight="600" font-family="system-ui">OutboundTransfer</text>
+        <line x1="826" y1="28" x2="810" y2="48" stroke="#34D399" stroke-width="1.2" stroke-dasharray="3,3"/>
+        <text x="848" y="56" fill="#34D399" font-size="7" font-weight="600" font-family="system-ui">InboundTransfer</text>
+        <line x1="745" y1="100" x2="745" y2="130" stroke="#10B981" stroke-width="1.4"/><polygon points="741,125 745,132 749,125" fill="#10B981"/>
+        <text x="745" y="118" text-anchor="middle" fill="#10B981" font-size="7" font-weight="600" font-family="system-ui">OutboundPayment</text>
+        <rect x="690" y="133" width="110" height="30" rx="6" fill="#1E293B" stroke="#64748B" stroke-width="1"/><text x="745" y="148" text-anchor="middle" fill="#E2E8F0" font-size="9" font-weight="600" font-family="system-ui">Third Party</text><text x="745" y="158" text-anchor="middle" fill="#94A3B8" font-size="7" font-family="system-ui">vendor / supplier</text>
+        <!-- Connected 2 -->
+        <rect x="405" y="260" width="180" height="55" rx="10" fill="#1a1040" stroke="#8B5CF6" stroke-width="1.8"/><text x="495" y="282" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="700" font-family="system-ui">Connected Account</text><text x="495" y="298" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="system-ui">Custom (merchant B)</text>
+        <line x1="350" y1="120" x2="405" y2="280" stroke="#8B5CF6" stroke-width="1.2"/><polygon points="400,276 405,282 399,283" fill="#8B5CF6"/>
+        <rect x="415" y="345" width="75" height="36" rx="6" fill="#0d2a2a" stroke="#06B6D4" stroke-width="1.2"/><text x="452" y="366" text-anchor="middle" fill="#F1F5F9" font-size="9" font-weight="600" font-family="system-ui">Cardholder</text>
+        <rect x="505" y="345" width="70" height="36" rx="6" fill="#0d2a2a" stroke="#06B6D4" stroke-width="1.2"/><text x="540" y="366" text-anchor="middle" fill="#F1F5F9" font-size="9" font-weight="600" font-family="system-ui">Card</text>
+        <text x="495" y="392" text-anchor="middle" fill="#06B6D4" font-size="7.5" font-family="system-ui">Issuing Balance</text>
+        <line x1="490" y1="345" x2="490" y2="318" stroke="#06B6D4" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <line x1="585" y1="280" x2="638" y2="255" stroke="#F59E0B" stroke-width="1.6"/><polygon points="633,251 638,255 632,258" fill="#F59E0B"/>
+        <text x="612" y="261" fill="#F59E0B" font-size="8" font-weight="600" font-family="system-ui">Payouts</text>
+        <!-- Treasury 2 -->
+        <rect x="640" y="230" width="210" height="55" rx="10" fill="#0a2618" stroke="#10B981" stroke-width="1.8"/><text x="745" y="251" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="700" font-family="system-ui">Treasury Financial Acct</text><text x="745" y="267" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="system-ui">Merchant B (FDIC-eligible)</text>
+        <line x1="745" y1="285" x2="745" y2="315" stroke="#10B981" stroke-width="1.4"/><polygon points="741,310 745,317 749,310" fill="#10B981"/>
+        <text x="745" y="303" text-anchor="middle" fill="#10B981" font-size="7" font-weight="600" font-family="system-ui">OutboundPayment</text>
+        <rect x="690" y="318" width="110" height="28" rx="6" fill="#1E293B" stroke="#64748B" stroke-width="1"/><text x="745" y="336" text-anchor="middle" fill="#E2E8F0" font-size="9" font-weight="600" font-family="system-ui">Third Party</text>
+        <rect x="793" y="210" width="68" height="22" rx="6" fill="#1E293B" stroke="#64748B" stroke-width="1"/><text x="827" y="224" text-anchor="middle" fill="#E2E8F0" font-size="8" font-weight="600" font-family="system-ui">Ext. Bank</text>
+        <line x1="815" y1="230" x2="826" y2="218" stroke="#10B981" stroke-width="1.4"/>
+        <text x="840" y="242" fill="#10B981" font-size="7" font-weight="600" font-family="system-ui">OutboundTransfer</text>
+        <!-- Vault -->
+        <rect x="30" y="450" width="830" height="130" rx="14" fill="#1a0a0a" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="6,3"/><text x="445" y="472" text-anchor="middle" fill="#EF4444" font-size="11" font-weight="700" font-family="system-ui">OUR VAULT SYSTEM — Immutable Ledger + Balance Engine</text>
+        <rect x="50" y="490" width="150" height="50" rx="8" fill="#1E293B" stroke="#F87171" stroke-width="1.2"/><text x="125" y="510" text-anchor="middle" fill="#F1F5F9" font-size="10" font-weight="700" font-family="system-ui">Ledger</text><text x="125" y="524" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="system-ui">(append-only)</text>
+        <rect x="220" y="490" width="160" height="50" rx="8" fill="#1E293B" stroke="#FBBF24" stroke-width="1.2"/><text x="300" y="510" text-anchor="middle" fill="#F1F5F9" font-size="10" font-weight="700" font-family="system-ui">Balance Engine</text><text x="300" y="524" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="system-ui">Pending | Available | Treasury</text>
+        <rect x="400" y="490" width="150" height="50" rx="8" fill="#1E293B" stroke="#34D399" stroke-width="1.2"/><text x="475" y="510" text-anchor="middle" fill="#F1F5F9" font-size="10" font-weight="700" font-family="system-ui">Reconciler</text><text x="475" y="524" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="system-ui">Webhook ↔ Ledger match</text>
+        <rect x="570" y="490" width="150" height="50" rx="8" fill="#1E293B" stroke="#A78BFA" stroke-width="1.2"/><text x="645" y="510" text-anchor="middle" fill="#F1F5F9" font-size="10" font-weight="700" font-family="system-ui">Billing Processor</text><text x="645" y="524" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="system-ui">Pre-transfer fee calc</text>
+        <line x1="280" y1="135" x2="125" y2="450" stroke="#EF4444" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+        <line x1="495" y1="315" x2="475" y2="450" stroke="#EF4444" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+        <line x1="745" y1="285" x2="475" y2="450" stroke="#EF4444" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+        <rect x="220" y="235" width="120" height="30" rx="6" fill="#1E293B" stroke="#64748B" stroke-width="1"/><text x="280" y="252" text-anchor="middle" fill="#E2E8F0" font-size="9" font-weight="600" font-family="system-ui">External Acct</text><text x="280" y="262" text-anchor="middle" fill="#94A3B8" font-size="7" font-family="system-ui">Platform bank</text>
+        <line x1="280" y1="235" x2="280" y2="138" stroke="#64748B" stroke-width="1" stroke-dasharray="4,3"/>
+      </svg>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#3B82F6"></div><span>Pay-ins</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6"></div><span>Transfers</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#06B6D4"></div><span>Issuing</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F59E0B"></div><span>Payouts / Billing</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#10B981"></div><span>Treasury Movements</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#EF4444"></div><span>Vault Ledger</span></div>
+      </div>
+    </div>
+  </div>
+  <div id="s2-flow" class="panel"></div>
+  <div id="s2-ledger" class="panel"><p class="note">Every money movement creates an immutable double-entry ledger record in Our Vault system.</p><div id="s2-ledger-table" style="overflow-x:auto"></div></div>
+  <div id="s2-summary" class="panel"></div>
 </div>
 
 <script>
-// Tab switching
-document.querySelectorAll('.tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+/* ─── NAV ─── */
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
+    document.getElementById(btn.dataset.section).classList.add('active');
   });
 });
 
-// Populate workflow
-const phases = [
-  { title:"1. Sales Ingestion (End-of-Day)", color:"#3B82F6", steps:["POS / Payment gateway captures transactions throughout the day","EOD batch job aggregates gross sales per merchant","Each transaction line written to the Ledger (type: SALE_CREDIT)","Merchant wallet Pending Balance increases by gross amount"] },
-  { title:"2. Ledger & Balance Engine", color:"#8B5CF6", steps:["Every money movement creates an immutable ledger entry (double-entry bookkeeping)","Balance Summary recalculated: Pending | Available | Reserved | Total","After settlement window (e.g. T+1 or T+2), Pending → Available","Ledger entry type: SETTLEMENT_CLEAR written on transition"] },
-  { title:"3. Platform Charge Calculation", color:"#F59E0B", steps:["Billing Settings fetched per merchant (flat fee, %, tiered, or hybrid)","Charges calculated against Available Balance before disbursement","Ledger entries created: PLATFORM_FEE_DEBIT per charge type","Net Disbursable = Available − Platform Fees − Reserves"] },
-  { title:"4. Disbursement Approval", color:"#EF4444", steps:["Auto-trigger or merchant-initiated disbursement request created","Rules engine checks: min threshold, KYC status, fraud flags","If amount > threshold → route to manual approval queue","Approved requests move to Disbursement Queue with status APPROVED"] },
-  { title:"5. Stripe Payout Execution", color:"#10B981", steps:["Disbursement worker calls Stripe Payouts API (or Transfers API)","Stripe payout ID stored; ledger entry: DISBURSEMENT_DEBIT","Webhook listener updates status: PROCESSING → PAID / FAILED","On success: Available Balance reduced; on failure: amount returned to Available"] },
+/* ─── GENERIC TAB SYSTEM ─── */
+function initTabs(containerId, tabDefs, prefix){
+  const c=document.getElementById(containerId);
+  tabDefs.forEach((t,i)=>{
+    const btn=document.createElement('button');
+    btn.className='tab'+(i===0?' active':'');
+    btn.textContent=t.label;
+    btn.dataset.panel=prefix+'-'+t.id;
+    btn.addEventListener('click',()=>{
+      c.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+      tabDefs.forEach(td=>document.getElementById(prefix+'-'+td.id).classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(prefix+'-'+t.id).classList.add('active');
+    });
+    c.appendChild(btn);
+  });
+}
+initTabs('tabs1',[{id:'flow',label:'Workflow'},{id:'billing',label:'Billing Types'},{id:'ledger',label:'Ledger Codes'},{id:'arch',label:'Architecture'}],'s1');
+initTabs('tabs2',[{id:'arch',label:'Architecture'},{id:'flow',label:'Step-by-Step'},{id:'ledger',label:'Ledger Codes'},{id:'summary',label:'Summary'}],'s2');
+
+/* ─── ARROW SVG ─── */
+const arrowSVG='<div class="arrow-down"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2 L10 14 M6 11 L10 16 L14 11" stroke="#475569" stroke-width="2" fill="none"/></svg></div>';
+
+/* ═══ SECTION 1 DATA ═══ */
+const s1Phases=[
+  {title:"1. Sales Ingestion (End-of-Day)",color:"#3B82F6",steps:["POS / Payment gateway captures transactions throughout the day","EOD batch job aggregates gross sales per merchant","Each transaction line written to the Ledger (type: SALE_CREDIT)","Merchant wallet Pending Balance increases by gross amount"]},
+  {title:"2. Ledger & Balance Engine",color:"#8B5CF6",steps:["Every money movement creates an immutable ledger entry (double-entry bookkeeping)","Balance Summary recalculated: Pending | Available | Reserved | Total","After settlement window (e.g. T+1 or T+2), Pending → Available","Ledger entry type: SETTLEMENT_CLEAR written on transition"]},
+  {title:"3. Platform Charge Calculation",color:"#F59E0B",steps:["Billing Settings fetched per merchant (flat fee, %, tiered, or hybrid)","Charges calculated against Available Balance before disbursement","Ledger entries created: PLATFORM_FEE_DEBIT per charge type","Net Disbursable = Available − Platform Fees − Reserves"]},
+  {title:"4. Disbursement Approval",color:"#EF4444",steps:["Auto-trigger or merchant-initiated disbursement request created","Rules engine checks: min threshold, KYC status, fraud flags","If amount > threshold → route to manual approval queue","Approved requests move to Disbursement Queue with status APPROVED"]},
+  {title:"5. Stripe Payout Execution",color:"#10B981",steps:["Disbursement worker calls Stripe Payouts API (or Transfers API)","Stripe payout ID stored; ledger entry: DISBURSEMENT_DEBIT","Webhook listener updates status: PROCESSING → PAID / FAILED","On success: Available Balance reduced; on failure: amount returned to Available"]},
 ];
-const flowEl = document.getElementById('flow');
-phases.forEach((p,i) => {
-  let html = `<div class="card" style="border-left:4px solid ${p.color}"><h3 style="color:${p.color}">${p.title}</h3>`;
-  p.steps.forEach(s => { html += `<div class="step"><span class="arrow" style="color:${p.color}">→</span><span>${s}</span></div>`; });
-  html += '</div>';
-  if (i < phases.length - 1) html += '<div class="arrow-down"><svg width="24" height="28" viewBox="0 0 24 28"><path d="M12 0 L12 20 M6 15 L12 22 L18 15" stroke="#94A3B8" stroke-width="2.5" fill="none"/></svg></div>';
-  flowEl.innerHTML += html;
+const flowEl1=document.getElementById('s1-flow');
+s1Phases.forEach((p,i)=>{
+  let h=`<div class="card" style="border-left:4px solid ${p.color}"><h3 style="color:${p.color}">${p.title}</h3>`;
+  p.steps.forEach(s=>{h+=`<div class="step"><span class="arrow" style="color:${p.color}">→</span><span>${s}</span></div>`;});
+  h+='</div>';
+  if(i<s1Phases.length-1)h+=arrowSVG;
+  flowEl1.innerHTML+=h;
 });
 
-// Populate billing
-const billingTypes = [
-  { type:"Flat Fee", ex:"$0.30 per txn", desc:"Fixed amount per transaction" },
-  { type:"Percentage", ex:"2.9% of sale", desc:"Variable cut of gross sales" },
-  { type:"Tiered", ex:"2.5% < $10k, 2.0% ≥ $10k", desc:"Rate drops at volume thresholds" },
-  { type:"Hybrid", ex:"2.9% + $0.30", desc:"Percentage plus flat fee combined" },
-  { type:"Subscription", ex:"$99/mo deducted", desc:"Recurring platform fee from wallet" },
-];
-const billingEl = document.getElementById('billing');
-billingTypes.forEach(b => {
-  billingEl.innerHTML += `<div class="billing-card"><div class="row"><span class="type">${b.type}</span><code>${b.ex}</code></div><p class="desc">${b.desc}</p></div>`;
-});
-billingEl.innerHTML += '<div class="order-box"><strong>Order of deduction:</strong> Platform Fee → Rolling Reserve (if any) → Net Disbursable Amount → Stripe Payout</div>';
+// Billing
+const billingTypes=[{type:"Flat Fee",ex:"$0.30 per txn",desc:"Fixed amount per transaction"},{type:"Percentage",ex:"2.9% of sale",desc:"Variable cut of gross sales"},{type:"Tiered",ex:"2.5% < $10k, 2.0% ≥ $10k",desc:"Rate drops at volume thresholds"},{type:"Hybrid",ex:"2.9% + $0.30",desc:"Percentage plus flat fee combined"},{type:"Subscription",ex:"$99/mo deducted",desc:"Recurring platform fee from wallet"}];
+const billingEl=document.getElementById('s1-billing');
+billingEl.innerHTML='<p class="note">Platform charges are applied per merchant billing settings <strong>before</strong> net disbursement is calculated.</p>';
+billingTypes.forEach(b=>{billingEl.innerHTML+=`<div class="billing-card"><div class="row"><span class="type">${b.type}</span><code>${b.ex}</code></div><p class="desc">${b.desc}</p></div>`;});
+billingEl.innerHTML+='<div class="order-box"><strong>Order of deduction:</strong> Platform Fee → Rolling Reserve (if any) → Net Disbursable Amount → Stripe Payout</div>';
 
-// Populate ledger
-const ledgerCodes = [
-  { code:"SALE_CREDIT", effect:"+Pending", trigger:"EOD batch injection", ec:"#4ADE80" },
-  { code:"SETTLEMENT_CLEAR", effect:"Pending→Available", trigger:"Settlement window passes", ec:"#FBBF24" },
-  { code:"PLATFORM_FEE_DEBIT", effect:"−Available", trigger:"Pre-disbursement billing", ec:"#F87171" },
-  { code:"RESERVE_HOLD", effect:"−Available +Reserved", trigger:"Risk / rolling reserve", ec:"#FBBF24" },
-  { code:"DISBURSEMENT_DEBIT", effect:"−Available", trigger:"Stripe payout sent", ec:"#F87171" },
-  { code:"DISBURSEMENT_REVERSAL", effect:"+Available", trigger:"Payout failed / returned", ec:"#4ADE80" },
-  { code:"REFUND_DEBIT", effect:"−Pending or −Available", trigger:"Customer refund processed", ec:"#F87171" },
-  { code:"ADJUSTMENT", effect:"±Any bucket", trigger:"Manual correction / dispute", ec:"#FBBF24" },
+// S1 Ledger
+const s1Codes=[
+  {code:"SALE_CREDIT",effect:"+Pending",trigger:"EOD batch injection",ec:"#4ADE80"},
+  {code:"SETTLEMENT_CLEAR",effect:"Pending→Available",trigger:"Settlement window passes",ec:"#FBBF24"},
+  {code:"PLATFORM_FEE_DEBIT",effect:"−Available",trigger:"Pre-disbursement billing",ec:"#F87171"},
+  {code:"RESERVE_HOLD",effect:"−Available +Reserved",trigger:"Risk / rolling reserve",ec:"#FBBF24"},
+  {code:"DISBURSEMENT_DEBIT",effect:"−Available",trigger:"Stripe payout sent",ec:"#F87171"},
+  {code:"DISBURSEMENT_REVERSAL",effect:"+Available",trigger:"Payout failed / returned",ec:"#4ADE80"},
+  {code:"REFUND_DEBIT",effect:"−Pending or −Available",trigger:"Customer refund processed",ec:"#F87171"},
+  {code:"ADJUSTMENT",effect:"±Any bucket",trigger:"Manual correction / dispute",ec:"#FBBF24"},
 ];
-const ledgerEl = document.querySelector('#ledger > div');
-let tbl = '<table><thead><tr><th>Ledger Code</th><th>Balance Effect</th><th>Trigger</th></tr></thead><tbody>';
-ledgerCodes.forEach(l => {
-  tbl += `<tr><td><code style="color:#7DD3FC">${l.code}</code></td><td style="color:${l.ec};font-weight:600;font-size:12px">${l.effect}</td><td style="color:#CBD5E1">${l.trigger}</td></tr>`;
+let t1='<table><thead><tr><th>Ledger Code</th><th>Balance Effect</th><th>Trigger</th></tr></thead><tbody>';
+s1Codes.forEach(l=>{t1+=`<tr><td><code style="color:#7DD3FC">${l.code}</code></td><td style="color:${l.ec};font-weight:600;font-size:12px">${l.effect}</td><td style="color:#CBD5E1">${l.trigger}</td></tr>`;});
+t1+='</tbody></table>';
+document.getElementById('s1-ledger-table').innerHTML=t1;
+
+/* ═══ SECTION 2 DATA ═══ */
+const s2Phases=[
+  {ph:"A",title:"Customer Pay-ins → Platform",color:"#3B82F6",src:"Stripe Payments",steps:["Customers pay via card, bank transfer, or digital wallet","Stripe captures pay-in; funds land in Platform balance","LEDGER ▸ PAY_IN_CREDIT — gross amount per txn recorded","VAULT  ▸ Merchant Pending balance +gross"]},
+  {ph:"B",title:"Platform → Transfer → Connected Account",color:"#8B5CF6",src:"Stripe Connect",steps:["Platform calculates billing charges per merchant settings (flat / % / tiered / hybrid)","Net amount transferred to merchant's Custom Connected Account","LEDGER ▸ PLATFORM_FEE_DEBIT + TRANSFER_TO_CONNECTED","VAULT  ▸ Pending → Available (net of platform fees)"]},
+  {ph:"C",title:"Connected Account — Issuing (Optional)",color:"#06B6D4",src:"Stripe Issuing",steps:["Connected Account provisions Cardholder + Card (virtual/physical)","Card spend draws from Issuing Balance within the connected account","LEDGER ▸ CARD_SPEND_DEBIT per authorized transaction","VAULT  ▸ Available reduced by card authorization amount"]},
+  {ph:"D",title:"Connected Account → Payout → Treasury FA",color:"#F59E0B",src:"Stripe Treasury",steps:["Payout moves funds from Connected Account into Treasury Financial Account","Treasury FA is the merchant's stored-value account (FDIC-eligible via bank partner)","LEDGER ▸ PAYOUT_TO_TREASURY with stripe payout_id","VAULT  ▸ Available → Treasury bucket updated"]},
+  {ph:"E",title:"Treasury — Outbound Transfers & Payments",color:"#10B981",src:"Stripe Treasury",steps:["OutboundTransfer — send funds to merchant's own external bank (ACH/wire)","OutboundPayment — send funds to third party (vendor, supplier, etc.)","InboundTransfer — pull funds into Treasury from external bank","LEDGER ▸ TREASURY_OUTBOUND_DEBIT / TREASURY_INBOUND_CREDIT","VAULT  ▸ Treasury balance adjusted; status via webhooks"]},
+  {ph:"F",title:"Webhook Reconciliation & Finality",color:"#EF4444",src:"Vault System",steps:["Stripe webhooks confirm every movement (payout.paid, outbound_transfer.posted, etc.)","Vault reconciler matches webhook events against pending ledger entries","Mismatches flagged; auto-retry on transient failures","LEDGER ▸ RECONCILIATION_CONFIRM / RECONCILIATION_MISMATCH","VAULT  ▸ Final balances locked per settlement cycle"]},
+];
+const flowEl2=document.getElementById('s2-flow');
+s2Phases.forEach((p,i)=>{
+  const isV=s=>s.startsWith('LEDGER')||s.startsWith('VAULT');
+  let h=`<div class="card" style="border-left:4px solid ${p.color}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3 style="color:${p.color};margin:0"><span class="badge" style="background:${p.color}">${p.ph}</span>${p.title}</h3><span class="src-badge">${p.src}</span></div>`;
+  p.steps.forEach(s=>{const v=isV(s);h+=`<div class="step${v?' vault':''}"><span style="color:${p.color};font-weight:700;flex-shrink:0">${v?'◆':'→'}</span><span>${s}</span></div>`;});
+  h+='</div>';
+  if(i<s2Phases.length-1)h+=arrowSVG;
+  flowEl2.innerHTML+=h;
 });
-tbl += '</tbody></table>';
-ledgerEl.innerHTML = tbl;
+
+// S2 Ledger
+const s2Codes=[
+  {code:"PAY_IN_CREDIT",dr:"Platform Receivable",cr:"Merchant Pending",trigger:"Customer payment captured",color:"#3B82F6"},
+  {code:"PLATFORM_FEE_DEBIT",dr:"Merchant Pending",cr:"Platform Revenue",trigger:"Billing charge applied",color:"#F59E0B"},
+  {code:"TRANSFER_TO_CONNECTED",dr:"Platform Balance",cr:"Connected Acct Balance",trigger:"Stripe Transfer created",color:"#8B5CF6"},
+  {code:"CARD_SPEND_DEBIT",dr:"Issuing Balance",cr:"Card Network Payable",trigger:"Card authorization",color:"#06B6D4"},
+  {code:"PAYOUT_TO_TREASURY",dr:"Connected Acct Balance",cr:"Treasury FA Balance",trigger:"Payout to Treasury FA",color:"#F59E0B"},
+  {code:"TREASURY_OUTBOUND_DEBIT",dr:"Treasury FA Balance",cr:"External Bank",trigger:"OutboundTransfer / OutboundPayment",color:"#10B981"},
+  {code:"TREASURY_INBOUND_CREDIT",dr:"External Bank",cr:"Treasury FA Balance",trigger:"InboundTransfer received",color:"#10B981"},
+  {code:"RECONCILIATION_CONFIRM",dr:"—",cr:"—",trigger:"Webhook confirms posted status",color:"#EF4444"},
+  {code:"RECONCILIATION_MISMATCH",dr:"—",cr:"—",trigger:"Amount/status mismatch flagged",color:"#EF4444"},
+  {code:"REFUND_DEBIT",dr:"Merchant Pending/Avail",cr:"Customer Refund",trigger:"Refund issued to customer",color:"#F87171"},
+];
+let t2='<table><thead><tr><th>Ledger Code</th><th>Debit</th><th>Credit</th><th>Trigger</th></tr></thead><tbody>';
+s2Codes.forEach(l=>{t2+=`<tr><td><code style="color:${l.color}">${l.code}</code></td><td style="color:#F87171;font-size:11px">${l.dr}</td><td style="color:#4ADE80;font-size:11px">${l.cr}</td><td style="color:#CBD5E1">${l.trigger}</td></tr>`;});
+t2+='</tbody></table>';
+document.getElementById('s2-ledger-table').innerHTML=t2;
+
+// S2 Summary
+const summaryPts=[
+  {icon:"🏦",title:"Stripe Treasury as Core Rail",text:"All merchant funds flow through Stripe's Treasury Financial Accounts — providing FDIC-eligible stored value, ACH/wire capabilities, and full money movement APIs."},
+  {icon:"📒",title:"Immutable Double-Entry Ledger",text:"Every money movement (pay-in, fee, transfer, payout, card spend, treasury movement) creates an append-only ledger entry in Our Vault."},
+  {icon:"💰",title:"Derived Balance Buckets",text:"Pending, Available, Treasury, and Reserved balances are always computed from ledger entries — never stored as standalone mutable fields."},
+  {icon:"🧾",title:"Billing Before Disbursement",text:"Platform charges (flat, %, tiered, hybrid, subscription) are deducted before the Transfer to Connected Account."},
+  {icon:"💳",title:"Optional Card Issuing",text:"Connected Accounts can issue virtual/physical cards via Stripe Issuing. Card spend tracked as CARD_SPEND_DEBIT in the Vault ledger."},
+  {icon:"🔄",title:"Webhook-Driven Finality",text:"Payout and Treasury statuses confirmed via Stripe webhooks. Vault reconciler matches events against pending ledger entries."},
+  {icon:"🔐",title:"Idempotent & Retry-Safe",text:"Every Stripe object ID stored in the ledger to prevent duplicate movements. Webhook deduplication by event ID."},
+];
+const sumEl=document.getElementById('s2-summary');
+summaryPts.forEach(s=>{sumEl.innerHTML+=`<div class="summary-card"><span class="icon">${s.icon}</span><div><h4>${s.title}</h4><p>${s.text}</p></div></div>`;});
+const deductions=["Gross Sales Captured","− Platform Billing Fee (per merchant settings)","− Rolling Reserve (if applicable)","= Net Transfer to Connected Account","→ Payout to Treasury Financial Account","→ OutboundTransfer to external bank / OutboundPayment to third party"];
+let dH='<div class="deduction"><h4>Deduction Order (before disbursement)</h4>';
+deductions.forEach((d,i)=>{const c=i<3?'#FDE68A':i===3?'#4ADE80':'#7DD3FC';dH+=`<div class="line"><span style="width:18px;text-align:right;flex-shrink:0;color:#64748B">${i+1}.</span><span style="color:${c}">${d}</span></div>`;});
+dH+='</div>';
+sumEl.innerHTML+=dH;
 </script>
 </body>
 </html>
